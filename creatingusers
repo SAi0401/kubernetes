@@ -1,0 +1,78 @@
+Add Add new users for administering the k8s cluster
+
+new users for administering the k8s cluster
+Created by Alexandru Marica
+Last updated Sep 13, 2019
+
+When you create an Amazon EKS cluster, the IAM entity user or role, such as a federated user that creates the cluster, is automatically granted system:masters permissions in the cluster's RBAC configuration. To grant additional AWS users or roles the ability to interact with your cluster, you must edit the aws-auth ConfigMap within Kubernetes.
+
+ 
+
+Prerequisites
+- existent IAM users, the associated ARN is needed
+- aws-iam-authenticator is installed (should be as we already have a running cluster at this point)
+
+2. Check if aws-auth config-map is installed and, if needed, install it
+- check for config-map
+
+kubectl get configmap -n kube-system aws-auth
+NAME       DATA   AGE
+aws-auth   1      13d
+
+- download it, edit it and install it if you get an error in the form Error from server (NotFound): configmaps "aws-auth" not found
+
+curl -o aws-auth-cm.yaml https://amazon-eks.s3-us-west-2.amazonaws.com/cloudformation/2019-02-11/aws-auth-cm.yaml
+
+Edit the YAML file, add the NodeGroup Instance IAM role ARN as in example below. 
+
+apiVersion: v1
+kind: ConfigMap
+metadata:  
+  name: aws-auth  
+  namespace: kube-system
+data:  
+  mapRoles: |    
+  - rolearn: arn:aws:iam::374553666544:role/eksctl-dev-k8s-us-east-1-nodegrou-NodeInstanceRole-1K80KS2YRNQ2A    
+    username: system:node:{{EC2PrivateDNSName}}    
+    groups:    
+      - system:bootstrappers      
+      - system:nodes
+
+Apply the configuration. This command may take a few minutes to finish.
+
+kubectl apply -f aws-auth-cm.yaml
+
+3. Add users by editing the config-map
+kubectl edit -n kube-system configmap/aws-auth
+
+ Create if missing the mapUsers section, add the user ARN there
+
+ 
+
+apiVersion: v1
+data:
+  mapRoles: |
+    - groups:
+      - system:bootstrappers
+      - system:nodes
+      rolearn: arn:aws:iam::374553666544:role/eksctl-dev-k8s-us-east-1-nodegrou-NodeInstanceRole-1K80KS2YRNQ2A
+      username: system:node:{{EC2PrivateDNSName}}
+  mapUsers: | 
+    - userarn: arn:aws:iam::374553666544:user/sbhankhede-api
+      username: sbhankhede-api  
+      groups    
+        - system:masters 
+kind: ConfigMap
+metadata:
+  creationTimestamp: "2019-08-22T15:59:53Z"
+  name: aws-auth
+  namespace: kube-system
+  resourceVersion: "1690935"
+  selfLink: /api/v1/namespaces/kube-system/configmaps/aws-auth
+  uid: e133c819-c4f5-11e9-9cac-120d7429417e
+
+Save and exit, this will apply the modified map
+
+  4. The new user will need to download the kubectl config for the cluster in the home dir
+
+aws eks --region us-east-1 update-kubeconfig --name <cluster_name>
