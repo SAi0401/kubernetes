@@ -1,0 +1,37 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: dev-k8s-us-east-1
+  region: us-east-1
+
+vpc:
+  subnets:
+    private:
+      us-east-1a: { id: subnet-01e47e778b059f9b2 }
+      us-east-1b: { id: subnet-007ab9de582faa8aa }
+
+nodeGroups:
+  - name: standard-083019
+    labels: 
+      nodegroup-type: standard
+    instanceType: m5.large
+    minSize: 2
+    maxSize: 8
+    desiredCapacity: 2
+    volumeSize: 20
+    volumeType: gp2
+    privateNetworking: true
+    iam:
+      withAddonPolicies:
+        imageBuilder: true
+        autoScaler: true
+        ebs: true
+        efs: true
+        albIngress: true
+        xRay: true
+        cloudWatch: true
+    ssh:
+      publicKeyName: dev-k8s-us-east-1
+      allow: true
+  
