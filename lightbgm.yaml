@@ -1,0 +1,61 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: light-gbm-example-init
+  annotations:
+    getambassador.io/config: |
+      ---
+      apiVersion: ambassador/v1
+      kind: Mapping
+      name: light-gbm-example-init
+      prefix: /light_gbm_example/predict/
+      rewrite: ""
+      service: light-gbm-example:5001
+spec:
+  ports:
+    - name: light-gbm-example-init
+      port: 5002
+      targetPort: 5000
+  selector:
+    app: light-gbm-example-init
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: light-gbm-example-init
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: light-gbm-example-init
+    spec:
+      containers:
+        - name: light-gbm-example-init
+          image: 374553666544.dkr.ecr.us-east-1.amazonaws.com/cortex-models-dev:light-gbm-example
+          volumeMounts:
+            - name: git-data
+              mountPath: /git/cortex-external-model-factory
+          ports:
+            - containerPort: 5000
+      initContainers:
+        - name: sync-git
+          image: 374553666544.dkr.ecr.us-east-1.amazonaws.com/cortex-models-dev:git-sync
+          env:
+            - name: WORKDIR
+              value: "/git/cortex-external-model-factory"
+            - name: REMOTE
+              value: "git@bitbucket.org:aeratechnology/cortex-external-model-factory.git"
+          volumeMounts:
+            - name: git-data
+              mountPath: /git/cortex-external-model-factory
+      volumes:
+        - name: git-data
+          hostPath: 
+            path: /git/cortex-external-model-factory
+            type: DirectoryOrCreate
+        
+
+          
+
