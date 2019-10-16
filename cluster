@@ -1,0 +1,97 @@
+2. Launch a new cluster and (if needed) create one or more  NodeGroup(s)
+
+Configuration details about eksctl can be found at:
+
+https://eksctl.io
+
+
+One can create a cluster using a config file or command line flags
+For reusability and ease of making modifications, it’s best to use YAML config files for clusters
+
+eksctl create cluster -f cluster-config.yaml
+
+The cluster config file can contain only the control plane (the AWS managed part - masters + etcd) definition, or both the control plane and NodeGroup(s) definition(s). You cannot have only the NodeGroup(s) definition in a YAML config file  as eksctl will not know what control plane  is to be used 
+
+Example below, using an existing VPC/subnets and default EKS IAM role for both Control Plane and Node Groups:
+
+cat  cluster-config.yaml
+
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: dev-k8s-us-east-1
+  region: us-east-1
+
+vpc:
+  subnets:
+    private:
+      us-east-1a: { id: subnet-01e47e778b059f9b2 }
+      us-east-1b: { id: subnet-007ab9de582faa8aa }
+
+nodeGroups:
+  - name: dev-k8s-us-east-1-standard
+    labels:
+      nodegroup-type: standard
+    instanceType: m5.large
+    minSize: 2
+    maxSize: 8
+    desiredCapacity: 2
+    volumeSize: 20
+    volumeType: gp2
+    privateNetworking: true
+    iam:
+      withAddonPolicies:
+        imageBuilder: true
+        autoScaler: true
+        ebs: true
+        efs: true
+        albIngress: true
+        xRay: true
+        cloudWatch: true
+    ssh:
+      publicKeyName: k8s-aws-dev-us-east-1
+      allow: true
+ 
+
+Everything above the “nodeGroups“ section is related to the control plane which defines the name, region, subnets (and subsequently the VPC) 
+The config above will create a K8s cluster with a single NodeGroup of upto 8 nodes (desired 2), a 20G EBS in a private network topology (eg there is no public access to the Nodes)
+
+Custom IAM role can be used for both the control plane as service role and NodeGroup(s) as role attached to EC2 instances
+Important: the AWS API user that initiated the cluster creation will be the first Admin of the k8s cluster and the relevant config will be downloaded to:
+~/.kube/config
+
+ 
+
+Create a new Nodegroup:
+
+eksctl create nodegroup -f newNodeGroupFile.yaml
+ 
+
+3. Update an EKS cluster
+
+Say there’s a new k8s version available
+
+Update is done in 2 steps
+
+control plane
+ - from AWS Console, just select the cluster and hit upgrade
+ - using eksctl tool: eksctl update cluster --name=<clusterName>
+
+NodeGroups
+
+NodeGroups cannot/should not be upgraded before the control plane. 
+Upgrading the NodeGroup usually means using a new AMI with new s/w   
+While the upgrade is doable from AWS console, it’s best to use CLI (eksctl) as the upgrade implies:
+- creation of new NodeGroup with new k8s version (new ASG using a new AWS launch template with new version)
+- unscheduling old nodes and draining existing pods off of them
+- deletion of old NodeGroup
+Example below:
+eksctl create nodegroup -f <newNodeGroupFile.yaml>
+ After creation is completed, inspect if it’s successfully connected to the custer
+eksctl get nodegroups --cluster <clusterName> --region <yourAWSRegion>
+kubectl get nodes
+
+Delete the old NodeGroup
+eksctl delete nodegroup  --name oldNodeGroupName --region <yourAWSRegion> --cluster <clusterName>
+
