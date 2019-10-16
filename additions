@@ -1,0 +1,7 @@
+In this section the following will be discussed
+
+Observability - monitoring, logging and tracing with datadog
+
+HPA - Horizontal Pod Autoscalling - Pod autoscaling 
+
+Cluster Autoscaler on Amazon EKS - Nodes autoscaling 
