@@ -1,0 +1,192 @@
+---
+- hosts: local
+  tasks:
+    - name: clone all repositories for ispring component
+      git:
+        repo: "{{ item.repo }}"
+        version: "{{ item.branch }}"
+        dest: "{{ item.directory }}"
+        depth: 1
+      with_items:
+        - { repo: 'git@bitbucket.org:aeratechnology/ispring.git', branch: '{{ ISPRING_BRANCH }}', directory: '{{ WORKSPACE }}/core_project' }
+        - { repo: 'git@bitbucket.org:aeratechnology/tomcat9.git', branch: 'trunk', directory: '{{ WORKSPACE }}/tomcat9' }
+        - { repo: 'git@bitbucket.org:aeratechnology/ui2.git', branch: 'trunk', directory: '{{ WORKSPACE }}/ui2' }
+        - { repo: 'git@bitbucket.org:aeratechnology/forecastapp.git', branch: 'trunk', directory: '{{ WORKSPACE }}/forecastapp' }
+        - { repo: 'git@bitbucket.org:aeratechnology/test-framework.git', branch: 'trunk', directory: '{{ WORKSPACE }}/test_framework' }
+      when: build_ispring == 'true'
+
+    - name: clone ui3 repo
+      git:
+        repo: "{{ item.repo }}"
+        version: "{{ item.branch }}"
+        dest: "{{ item.directory }}"
+        depth: 1
+      with_items:
+        - { repo: 'git@bitbucket.org:aeratechnology/ispring.git', branch: '{{ ISPRING_BRANCH }}', directory: '{{ WORKSPACE }}/core_project' }
+        - { repo: 'git@bitbucket.org:aeratechnology/ui3.git', branch: '{{ UI3_BRANCH }}', directory: '{{ WORKSPACE }}/ui3' }
+      when: build_ui == 'true'
+
+    - name: clone actions repo
+      git: 
+        repo: "{{ item.repo }}" 
+        version: "{{ item.branch }}"
+        dest: "{{ item.directory }}"
+        depth: 1
+      with_items:
+        - { repo: 'git@bitbucket.org:aeratechnology/ispring.git', branch: '{{ ISPRING_BRANCH }}', directory: '{{ WORKSPACE }}/core_project' }
+        - { repo: 'git@bitbucket.org:aeratechnology/actions.git', branch: '{{ ACTIONS_BRANCH }}', directory: '{{ WORKSPACE }}/actions' }
+        - { repo: 'git@bitbucket.org:aeratechnology/aera-sw-web-ui-gen.git', branch: '{{ AERA_SW_WEB_UI_GEN_BRANCH }}', directory: '{{ WORKSPACE }}/aera-sw-web-ui-gen' }
+      when: build_actions == 'true'
+    
+    - name: clone aera-developer repo
+      git: 
+        repo: "{{ item.repo }}" 
+        version: "{{ item.branch }}"
+        dest: "{{ item.directory }}"
+        depth: 1
+      with_items:
+        - { repo: 'git@bitbucket.org:aeratechnology/ispring.git', branch: '{{ ISPRING_BRANCH }}', directory: '{{ WORKSPACE }}/core_project' }
+        - { repo: 'git@bitbucket.org:aeratechnology/aera-skill-ui-builder.git', branch: '{{ AERA_SKILL_UI_BUILDER_BRANCH }}', directory: '{{ WORKSPACE }}/aera-skill-ui-builder' }
+        - { repo: 'git@bitbucket.org:aeratechnology/aera-developer.git', branch: '{{ AERA_DEVELOPER_BRANCH }}', directory: '{{ WORKSPACE }}/aera-developer' }
+      when: build_aera_developer == 'true'
+
+    - name: clone processes repo
+      git:
+        repo: git@bitbucket.org:aeratechnology/processes.git
+        version: "{{ PROCESSES_BRANCH }}"
+        dest: "{{ WORKSPACE }}/processes"
+        depth: 1
+      when: build_processes == 'true'
+
+    - name: clone cwb-be repo
+      git:
+        repo: git@bitbucket.org:aeratechnology/aera-cognitiveworkbench-be.git
+        version: "{{ CWB_BE_BRANCH }}"
+        dest: "{{ WORKSPACE }}/CWB-BE"
+        depth: 1
+      when: build_cwb_be == 'true'
+
+    - name: clone cwb-fe repo
+      git:
+        repo: git@bitbucket.org:aeratechnology/aera-cognitiveworkbench-fe.git
+        version: "{{ CWB_FE_BRANCH }}"
+        dest: "{{ WORKSPACE }}/CWB-FE"
+        depth: 1
+      when: build_cwb_fe == 'true'
+
+    - name: clone discovery-be repo
+      git:
+        repo: git@bitbucket.org:aeratechnology/aera-discovery.git
+        version: "{{ DISCOVERY_BE_BRANCH }}"
+        dest: "{{ WORKSPACE }}/discoverybe"
+        depth: 1
+      when: build_discovery_be == 'true'
+
+    - name: clone discovery-fe repo
+      git:
+        repo: git@bitbucket.org:aeratechnology/discovery.git
+        version: "{{ DISCOVERY_FE_BRANCH }}"
+        dest: "{{ WORKSPACE }}/discoveryfe"
+        depth: 1
+      when: build_discovery_fe == 'true'
+
+    - name: clone mobile repo
+      git:
+        repo: git@bitbucket.org:aeratechnology/aera-mobile.git
+        version: "{{ MOBILE_BRANCH }}"
+        dest: "{{ WORKSPACE }}/mobile_app"
+        depth: 1
+      when: build_mobile == 'true'
+
+    - name: clone graph repo
+      git:
+        repo: git@bitbucket.org:aeratechnology/aera-graph.git
+        version: "{{ GRAPH_BRANCH }}"
+        dest: "{{ WORKSPACE }}/graph"
+        depth: 1
+      when: build_graph == 'true'
+
+    - name: clone modeling-be repo
+      git:
+        repo: "{{ item.repo }}"
+        version: "{{ item.branch }}"
+        dest: "{{ item.directory }}"
+        depth: 1
+      with_items:
+        - { repo: 'git@bitbucket.org:aeratechnology/ispring.git', branch: '{{ ISPRING_BRANCH }}', directory: '{{ WORKSPACE }}/core_project' }
+        - { repo: 'git@bitbucket.org:aeratechnology/artemis.git', branch: '{{ MODELING_BE_BRANCH }}', directory: '{{ WORKSPACE }}/modelingbe' }
+      when: build_modeling_be == 'true'
+
+    - name: clone voice repo
+      git:
+        repo: git@bitbucket.org:aeratechnology/aera-voice.git
+        version: "{{ VOICE_BOT_BRANCH }}"
+        dest: "{{ WORKSPACE }}/voicebot"
+        depth: 1
+      when: build_voice_bot == 'true'
+
+    - name: clone dwb-be repo
+      git:
+        repo: git@bitbucket.org:aeratechnology/aera-dataworkbench-be.git
+        version: "{{ DWB_BE_BRANCH }}"
+        dest: "{{ WORKSPACE }}/DWB-BE"
+        depth: 1
+      when: build_dwb_be == 'true'
+
+#    - name: clone dwb-fe repo
+#      git:
+#        repo: git@bitbucket.org:aeratechnology/aera-dataworkbench-ui.git
+#        version: "{{ DWB_FE_BRANCH }}"
+#        version: trunk
+#        dest: "{{ WORKSPACE }}/DWB-FE"
+#        depth: 1
+#      when: build_dwb_fe == 'true'
+
+    - name: clone auth repo
+      git:
+        repo: git@bitbucket.org:aeratechnology/aera-authentication.git 
+        version: "{{ AUTHENTICATION_BRANCH }}"
+        dest: "{{ WORKSPACE }}/authentication"
+        depth: 1
+      when: build_authentication == 'true'
+
+    - name: clone cortex-python repo
+      git:
+        repo: git@bitbucket.org:aeratechnology/aera-cortex-be.git
+        version: "{{ CORTEX_PYTHON_BRANCH }}"
+        dest: "{{ WORKSPACE }}/cortex-python"
+        depth: 1
+      when:  build_cortex_python == 'true'
+
+    - name: clone cortex-java repo
+      git:
+        repo: git@bitbucket.org:aeratechnology/aera-cortex-be.git
+        version: "{{ CORTEX_JAVA_BRANCH }}"
+        dest: "{{ WORKSPACE }}/cortex-java"
+        depth: 1
+      when: build_cortex_java == 'true'
+
+    - name: clone visualization viz1 repo
+      git:
+        repo: git@bitbucket.org:aeratechnology/vizualone.git
+        version: "{{ VISUALIZATION_BRANCH }}"
+        dest: "{{ WORKSPACE }}/viz-v1"
+        depth: 1
+      when: build_visualization == 'true'
+
+    - name: clone visualization viz2 repo
+      git:
+        repo: git@bitbucket.org:aeratechnology/vizualone.git
+        version: "{{ VISUALIZATION_V2_BRANCH }}"
+        dest: "{{ WORKSPACE }}/viz-v2"
+        depth: 1
+      when: build_visualization == 'true'
+
+
+    - name: clone aera-integration repo
+      git:
+        repo: git@bitbucket.org:aeratechnology/aera-integration.git
+        version: "{{ AERA_INTEGRATION_BRANCH }}"
+        dest: "{{ WORKSPACE }}/aera-integration"
+        depth: 1
+      when: build_aera_integration == 'true'
